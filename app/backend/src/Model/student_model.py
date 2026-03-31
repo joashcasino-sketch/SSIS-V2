@@ -1,38 +1,58 @@
 import csv
 from os import read
 from pathlib import Path
+from sqlite3 import Cursor, connect
+
+from app.backend.db.db_connection import get_connection
 
 student_csv = Path(__file__).resolve().parent.parent.parent / 'data' / 'students.csv'
 class StudentModel:
-    def __init__(self):
-        self.csv_file = student_csv
-        self.headers = ['ID Number', 'Name', 'Gender', 'Year Level', 'Program', 'College']
-
+   
     def add_student(self, student_data):
         try:
             if self.student_exist(student_data.get('ID Number')):
                 return False
             
-            with open(self.csv_file, 'a', newline='', encoding='utf-8') as file:
-                writer = csv.DictWriter(file, fieldnames=self.headers)
-                writer.writerow(student_data)
+            connect = get_connection()
+            cursor = connect.cursor()
 
-                return True
+            cursor.execute(""" 
+                INSERT INTO students (student_id, student_first_name, student_middle_name,
+                           student_last_name, gender, student_year_level, program_code)
+                VALUES(%s, %s, %s, %s, %s, %s, %s)
+            """, (
+                student_data["ID Number"],
+                student_data["First Name"],
+                student_data["Middle Name"],
+                student_data["Last Name"],
+                student_data["Gender"],
+                student_data["Year Level"],
+                student_data["Program"],
+            ))
+            connect.commit()
+            return True
             
         except Exception as e:
             print(f"Error adding students: {e}")
             return False
+        finally:
+            cursor.close()
+            connect.close()
         
     def student_exist(self, student_id):
         try:
-            with open(self.csv_file, 'r', encoding='utf-8') as file:
-                reader = csv.DictReader(file)
-                for row in reader:
-                    if row['ID Number'] == student_id:
-                        return True
+            connect = get_connection()
+            cursor = connect.cursor()
+            cursor.execute(
+                "SELECT 1 FROM students WHERE student_id = %s", (student_id,)
+            )
+            return cursor.fetchone() is not None
+        except Error as e:
+            print(f"Error checking students: {e}")
             return False
-        except FileNotFoundError:
-            return False
+        finally:
+            cursor.close()
+            connect.close()
         
     def edit_student(self, student_data):
         try:
