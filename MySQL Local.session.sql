@@ -24,7 +24,6 @@ CREATE TABLE IF NOT EXISTS programs(
 CREATE TABLE IF NOT EXISTS students (
     student_id              VARCHAR(9)              PRIMARY KEY, /*Format: 1234-5678 */
     student_first_name      VARCHAR(255)            NOT NULL,
-    student_middle_name     VARCHAR(255)            NOT NULL,
     student_last_name       VARCHAR(255)            NOT NULL,
     gender                  ENUM('Male', 'Female')  NOT NULL,
     student_year_level      ENUM('1', '2', '3', '4')NOT NULL,
@@ -41,10 +40,10 @@ INSERT INTO programs (program_code, program_name, college_code) VALUES
     ('BSCA', 'BS Computer Application', 'CCS'),
     ('BSIT', 'BS Information Technology', 'CCS');
 
-INSERT INTO students (student_id, student_first_name, student_middle_name, student_last_name, gender, student_year_level, program_code) VALUES
-    ('2021-0001', 'Joshua', 'Ray', 'Cruz', 'Male', 3, 'BSCS'),
-    ('2021-0002', 'Michael', 'Kim', 'Lee', 'Male', 2, 'BSCS'),
-    ('2021-0003', 'Tom', 'Shelby', 'Peaky', 'Male', 1, 'BSIT');
+INSERT INTO students (student_id, student_first_name, student_last_name, gender, student_year_level, program_code) VALUES
+    ('2021-0001', 'Joshua', 'Cruz', 'Male', 3, 'BSCS'),
+    ('2021-0002', 'Michael', 'Lee', 'Male', 2, 'BSCS'),
+    ('2021-0003', 'Tom', 'Peaky', 'Male', 1, 'BSIT');
 
 DELETE FROM users WHERE username = 'admin';
 

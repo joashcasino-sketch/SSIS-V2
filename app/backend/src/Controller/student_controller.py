@@ -26,6 +26,9 @@ class StudentController:
             messagebox.showerror("Error", "Student ID Already Exist!")
         return success
     
+    def get_all_students(self):
+        return self.model.get_all_students()
+    
     def update_student(self, student_data):
         success = self.model.edit_student(student_data)
 

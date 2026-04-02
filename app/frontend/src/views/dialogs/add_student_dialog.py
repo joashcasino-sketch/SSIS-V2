@@ -1,30 +1,12 @@
-import csv
+import sys
 import tkinter as tk
 from tkinter import messagebox
 from pathlib import Path
 
-DATA_PATH = Path(__file__).resolve().parent.parent.parent.parent.parent / "backend" / "data"
-
-def load_colleges():
-    colleges = {}
-    try:
-        with open(DATA_PATH / "colleges.csv", newline="", encoding="utf-8-sig") as f:
-            for row in csv.DictReader(f):
-                colleges[row["College Code"]] = row["College Name"]
-    except FileNotFoundError:
-        pass
-    return colleges  # { "CCS": "College of Computer Studies", ... }
-
-def load_programs_by_college(college_code):
-    programs = []
-    try:
-        with open(DATA_PATH / "programs.csv", newline="", encoding="utf-8-sig") as f:
-            for row in csv.DictReader(f):
-                if row["College Code"] == college_code:
-                    programs.append(row["Program Code"])
-    except FileNotFoundError:
-        pass
-    return programs
+CONTROLLER_PATH = Path(__file__).resolve().parent.parent.parent.parent.parent / 'backend' / 'src' / 'Controller'
+sys.path.insert(0, str(CONTROLLER_PATH))
+from college_controller import CollegeController
+from program_controller import ProgramController
 
 class AddStudentDialog:
     def __init__(self, parent, controller):
@@ -38,7 +20,12 @@ class AddStudentDialog:
         self.dialog.resizable(False, False)
         self.dialog.grab_set()
 
-        self.colleges = load_colleges()  # { code: name }
+        college_ctrl = CollegeController(None, user_role="user")
+        self.colleges = {
+            row["College Code"]: row["College Name"]
+            for row in college_ctrl.get_all_colleges()
+
+        }
 
         self.create_widgets()
         self.dialog.transient(parent)
@@ -51,26 +38,30 @@ class AddStudentDialog:
         self.dialog.geometry(f'+{x}+{y}')
 
     def _validate_id(self, new_value):
-        """Only allow digits and dashes in ID field."""
+        if len(new_value) > 9:
+            return False
         return all(c.isdigit() or c == '-' for c in new_value) or new_value == ""
 
     def on_college_select(self, *args):
-        """When college changes, reload the program dropdown."""
-        selected_code = self.college_var.get().split(" - ")[0]  # extract code
-        programs = load_programs_by_college(selected_code)
+        selected_code = self.college_var.get().split(" - ")[0]  
+        prog_ctrl = ProgramController(None, user_role="user")
+        programs = prog_ctrl.get_programs_by_college(selected_code)
+        program_codes = [row["Program Code"] for row in programs]
 
         self.program_var.set("")
         self.program_menu["menu"].delete(0, "end")
 
-        if programs:
-            for prog in programs:
+        if program_codes:
+            for prog in program_codes:
                 self.program_menu["menu"].add_command(
                     label=prog,
                     command=lambda p=prog: self.program_var.set(p)
                 )
-            self.program_var.set(programs[0])
+            self.program_var.set(program_codes[0])
         else:
-            self.program_menu["menu"].add_command(label="No programs found", command=lambda: None)
+            self.program_menu["menu"].add_command(
+                label="No programs found", command=lambda: None
+            )
 
     def create_widgets(self):
         title = tk.Label(
@@ -86,28 +77,35 @@ class AddStudentDialog:
         form_frame = tk.Frame(self.dialog, padx=30, pady=20, bg="#F8ECD1")
         form_frame.pack(fill="both", expand=True)
 
-        # ID Number - digits and dash only
+        
+        
         vcmd = (self.dialog.register(self._validate_id), "%P")
         tk.Label(form_frame, background="#F8ECD1", text="ID Number:", font=("Lato", 10)).grid(row=0, column=0, sticky="w", pady=10)
         self.id_entry = tk.Entry(form_frame, bg="#DEB6AB", font=("Lato", 10), width=10,
-                                  validate="key", validatecommand=vcmd)
+                validate="key", validatecommand=vcmd)
         self.id_entry.grid(row=0, column=1, pady=10)
 
-        # Name
-        tk.Label(form_frame, background="#F8ECD1", text="Name:", font=("Lato", 10)).grid(row=1, column=0, sticky="w", pady=10)
-        self.name_entry = tk.Entry(form_frame, bg="#DEB6AB", font=("Lato", 10), width=30)
-        self.name_entry.grid(row=1, column=1, pady=10)
+
+        # First Name
+        tk.Label(form_frame, background="#F8ECD1", text="First Name:", font=("Lato", 10)).grid(row=1, column=0, sticky="w", pady=10)
+        self.first_name_entry = tk.Entry(form_frame, bg="#DEB6AB", font=("Lato", 10), width=25)
+        self.first_name_entry.grid(row=1, column=1, pady=10)
+
+        # Last Name
+        tk.Label(form_frame, background="#F8ECD1", text="Last Name:", font=("Lato", 10)).grid(row=2, column=0, sticky="w", pady=10)
+        self.last_name_entry = tk.Entry(form_frame, bg="#DEB6AB", font=("Lato", 10), width=25)
+        self.last_name_entry.grid(row=2, column=1, pady=10)
 
         # Gender
-        tk.Label(form_frame, background="#F8ECD1", text="Gender:", font=("Lato", 10)).grid(row=2, column=0, sticky="w", pady=10)
+        tk.Label(form_frame, background="#F8ECD1", text="Gender:", font=("Lato", 10)).grid(row=3, column=0, sticky="w", pady=10)
         self.gender_var = tk.StringVar(value="Male")
         gender_frame = tk.Frame(form_frame, bg="#F8ECD1")
-        gender_frame.grid(row=2, column=1, sticky="w", pady=10)
+        gender_frame.grid(row=3, column=1, sticky="w", pady=10)
         tk.Radiobutton(gender_frame, bg="#F8ECD1", text="Male", variable=self.gender_var, value="Male").pack(side="left")
         tk.Radiobutton(gender_frame, bg="#F8ECD1", text="Female", variable=self.gender_var, value="Female").pack(side="left")
 
         # Year Level
-        tk.Label(form_frame, background="#F8ECD1", text="Year Level:", font=("Lato", 10)).grid(row=3, column=0, sticky="w", pady=10)
+        tk.Label(form_frame, background="#F8ECD1", text="Year Level:", font=("Lato", 10)).grid(row=4, column=0, sticky="w", pady=10)
         self.year_var = tk.StringVar(value="1")
         year_dropdown = tk.OptionMenu(form_frame, self.year_var, "1", "2", "3", "4")
         year_dropdown.config(
@@ -121,10 +119,10 @@ class AddStudentDialog:
             cursor="hand2",
             indicatoron=False
         )
-        year_dropdown.grid(row=3, column=1, pady=10)
+        year_dropdown.grid(row=4, column=1, pady=10)
 
         # College dropdown
-        tk.Label(form_frame, background="#F8ECD1", text="College:", font=("Lato", 10)).grid(row=4, column=0, sticky="w", pady=10)
+        tk.Label(form_frame, background="#F8ECD1", text="College:", font=("Lato", 10)).grid(row=5, column=0, sticky="w", pady=10)
         college_options = [f"{code} - {name}" for code, name in self.colleges.items()]
         self.college_var = tk.StringVar(value=college_options[0] if college_options else "")
         self.college_var.trace("w", self.on_college_select)
@@ -140,10 +138,10 @@ class AddStudentDialog:
             cursor="hand2",
             indicatoron=False       # ← removes the arrow indicator on the right
         )
-        college_menu.grid(row=4, column=1, pady=10)
+        college_menu.grid(row=5, column=1, pady=10)
 
         # Program dropdown (populated after college is selected)
-        tk.Label(form_frame, background="#F8ECD1", text="Program:", font=("Lato", 10)).grid(row=5, column=0, sticky="w", pady=10)
+        tk.Label(form_frame, background="#F8ECD1", text="Program:", font=("Lato", 10)).grid(row=6, column=0, sticky="w", pady=10)
         self.program_var = tk.StringVar()
         self.program_menu = tk.OptionMenu(form_frame, self.program_var, "")
         self.program_menu.config(
@@ -157,7 +155,7 @@ class AddStudentDialog:
             cursor="hand2",
             indicatoron=False
         )
-        self.program_menu.grid(row=5, column=1, pady=10)
+        self.program_menu.grid(row=6, column=1, pady=10)
 
         # Trigger initial program load
         self.on_college_select()
@@ -175,20 +173,22 @@ class AddStudentDialog:
                   command=self.dialog.destroy, cursor="hand2").pack(side="left", padx=10)
 
     def on_save(self):
-        college_code = self.college_var.get().split(" - ")[0]
+        first_name = self.first_name_entry.get().strip()
+        last_name  = self.last_name_entry.get().strip()
+        student_id = self.id_entry.get().strip()
+
+        if not student_id or not first_name or not last_name:
+            messagebox.showerror("Error", "ID Number, First Name, and Last Name are required!")
+            return
 
         student_data = {
-            'ID Number': self.id_entry.get().strip(),
-            'Name': self.name_entry.get().strip(),
-            'Gender': self.gender_var.get(),
-            'Year Level': self.year_var.get(),
-            'Program': self.program_var.get(),
-            'College': college_code
+            "ID Number":  student_id,
+            "First Name": first_name,
+            "Last Name":  last_name,
+            "Gender":     self.gender_var.get(),
+            "Year Level": self.year_var.get(),
+            "Program":    self.program_var.get(),
         }
-
-        if not student_data['ID Number'] or not student_data['Name']:
-            messagebox.showerror("Error", "ID Number and Name are required!")
-            return
 
         self.controller.add_student_from_dialog(student_data)
         self.dialog.destroy()

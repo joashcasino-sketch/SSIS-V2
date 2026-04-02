@@ -1,6 +1,5 @@
 from pathlib import Path
 import sys
-import csv
 from tkinter import CENTER, Button, Frame, PhotoImage, Label, StringVar, ttk, Entry, messagebox
 import tkinter as tk
 from turtle import width
@@ -248,22 +247,11 @@ class StudentPanel(Frame):
             self.tree.heading(col, text=col, anchor=CENTER)
         self.tree.heading("#0", text="", anchor="w")
 
-        # ── Scrollbars ─────────────────────────────────────────────────────
-        # vsb = ttk.Scrollbar(table_frame, orient="vertical",
-        #                     command=self.tree.yview)
-        # vsb.grid(row=0, column=1, sticky="ns")
-        # self.tree.configure(yscrollcommand=vsb.set)
-
-        # hsb = ttk.Scrollbar(table_frame, orient="horizontal",
-        #                     command=self.tree.xview)
-        # hsb.grid(row=1, column=0, sticky="ew")
-        # self.tree.configure(xscrollcommand=hsb.set)
 
         # ── Bindings ───────────────────────────────────────────────────────
         self.tree.bind("<Escape>", self.deselect_all)
         self.tree.bind("<Button-1>", self.on_click)
-            # lambda e: "break"
-            # if self.tree.identify_region(e.x, e.y) == "separator" else None)
+           
         self.tree.bind("<B1-Motion>", self.on_drag_select)
         self.tree.bind("<ButtonRelease-1>", self.on_drag_release)
 
@@ -278,19 +266,19 @@ class StudentPanel(Frame):
 
         try:
             if data is None:
-                csv_path = (BASE_DIR.parent.parent.parent.parent
-                            / "backend" / "data" / "students.csv")
-                with open(csv_path, newline="", encoding="utf-8") as f:
-                    data = list(csv.DictReader(f))
-
+                data = self.student_controller.get_all_students()
             for i, row in enumerate(data):
                 tag = "odd" if i % 2 == 0 else "even"
                 self.tree.insert("", "end", text=str(i + 1), values=(
-                    row["ID Number"], row["Name"], row["Gender"],
-                    row["Year Level"], row["Program"], row["College"],
+                    row["ID Number"],
+                    f"{row['First Name']} {row['Last Name']}",
+                    row["Gender"],
+                    row["Year Level"],
+                    row["Program"],
+                    "",  
                 ), tags=(tag,))
-        except FileNotFoundError:
-            print("CSV file not found.")
+        except Exception as e:
+            print(f"Error populating students {e}")
 
     # ─────────────────────────── DIALOGS ─────────────────────────────────────
 
