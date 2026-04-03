@@ -1,134 +1,173 @@
-import csv
 from pathlib import Path
+from sqlite3 import Cursor
+import sys
 
-college_csv = Path(__file__).resolve().parent.parent.parent / 'data' / 'colleges.csv'
+DB_PATH = Path(__file__).resolve().parent.parent / "db" 
+sys.path.insert(0, str(DB_PATH))
+
+from db_connection import get_connection
+from mysql.connector import Error
+   
 class CollegeModel:
-    def __init__(self):
-        self.csv_file = college_csv
-        self.headers = ['College Code', 'College Name']
 
     def add_college(self, college_data):
         try:
-            if self.college_exist(college_data.get('College Code')):
+            if self.program_exist(college_data.get('Program Code')):
                 return False
-            
-            with open(self.csv_file, 'a', newline='', encoding='utf-8') as file:
-                writer = csv.DictWriter(file, fieldnames=self.headers)
-                writer.writerow(college_data)
+                    
+            conn = get_connection()
+            cursor = conn.cursor()
 
-                return True
-            
+            cursor.execute(""" 
+                    INSERT INTO colleges (college_code, college_name)
+                    VALUES(%s, %s)
+                """, (
+                    college_data["College Code"],
+                    college_data["College Name"],
+                ))
+            conn.commit()
+            return True
+                    
         except Exception as e:
-            print(f"Error adding programs: {e}")
-            return False
+                print(f"Error adding colleges: {e}")
+                return False
+        finally:
+            cursor.close()
+            conn.close()
+
+    def get_all_colleges(self):
+        try:
+            conn = get_connection()
+            cursor = conn.cursor(dictionary=True)
+            cursor.execute("""
+                SELECT college_code AS 'College Code',
+                       college_name AS 'College Name'
+                FROM colleges
+            """)
+            return cursor.fetchall()
+ 
+        except Error as e:
+            print(f"Error fetching colleges: {e}")
+            return []
+        finally:
+            cursor.close()
+            conn.close()
         
     def college_exist(self, college_code):
         try:
-            with open(self.csv_file, 'r', encoding='utf-8') as file:
-                reader = csv.DictReader(file)
-                for row in reader:
-                    if row['College Code'] == college_code:
-                        return True
+           conn = get_connection()
+           cursor = conn.cursor()
+           cursor.execute("SELECT 1 FROM colleges WHERE college_code = %s", (college_code,))
+
+           return cursor.fetchone() is not None
+        except Error as e:
+            print(f"Error checking college {e}")
             return False
-        except FileNotFoundError:
-            return False
-        
+        finally:
+            cursor.close()
+            conn.close()
     def edit_college(self, college_data):
         try:
-            rows = []
-            found = False
-
-            with open(self.csv_file, 'r', newline='', encoding='utf-8') as file:
-                reader = csv.DictReader(file)
-                for row in reader:
-                    if row["College Code"] == college_data.get("College Code"):
-                        rows.append(college_data)
-                        found = True
-                    else:
-                        rows.append(row)
-
-            if not found:
-                return False
-            
-            with open(self.csv_file, 'w', newline='', encoding='utf-8') as file:
-                writer = csv.DictWriter(file, fieldnames=self.headers)
-                writer.writeheader()
-                writer.writerows(rows)
-
-            return True
-
-        except Exception as e:
-            print(f"Error update college: {e}")
+            conn = get_connection()
+            cursor = conn.cursor()
+            cursor.execute("""
+                UPDATE colleges
+                SET college_name = %s
+                WHERE college_code = %s
+            """, (
+                college_data["College Name"],
+                college_data["College Code"],
+            ))
+            conn.commit()
+            return cursor.rowcount > 0
+ 
+        except Error as e:
+            print(f"Error editing college: {e}")
             return False
+        finally:
+            cursor.close()
+            conn.close()
+
 
     def delete_college(self, college_code):
         try:
-            rows = []
-            found = False
-
-            with open(self.csv_file, 'r', newline='', encoding='utf-8') as file:
-                reader = csv.DictReader(file)
-                for row in reader:
-                    if row['College Code'] == college_code:
-                        found = True
-                    else:
-                        rows.append(row)
-            
-            if not found:
-                return False
-
-            with open(self.csv_file, 'w', newline='', encoding="utf-8") as file:
-                writer = csv.DictWriter(file, fieldnames=self.headers)
-                writer.writeheader()
-                writer.writerows(rows)
-
-            return True
-    
-        except Exception as e:
-            print(f"Error deleting college {e}")
+            conn = get_connection()
+            cursor = conn.cursor()
+            cursor.execute(
+                "DELETE FROM colleges WHERE college_code = %s", (college_code,)
+            )
+            conn.commit()
+            return cursor.rowcount > 0
+ 
+        except Error as e:
+            print(f"Error deleting college: {e}")
             return False
-        
+        finally:
+            cursor.close()
+            conn.close()
+
     def search_college(self, query):
         try:
-            results = []
-            query = query.lower().strip()
-
-            with open(self.csv_file, 'r', newline='', encoding='utf-8') as file:
-                reader = csv.DictReader(file)
-                for row in reader:
-                    if any(query in str(value).lower() for value in row.values()):
-                        results.append(row)
-
-            return results
-        
-        except FileNotFoundError:
-            return []
-        
-        except Exception as e:
+            conn = get_connection()
+            cursor = conn.cursor(dictionary=True)
+            like = f"%{query.strip()}%"
+            cursor.execute("""
+                SELECT college_code AS 'College Code',
+                       college_name AS 'College Name'
+                FROM colleges
+                WHERE college_code LIKE %s
+                OR college_name LIKE %s
+            """, (like, like))
+            return cursor.fetchall()
+ 
+        except Error as e:
             print(f"Search college error: {e}")
             return []
-    
+        finally:
+            cursor.close()
+            conn.close()
+
     def college_has_programs(self, college_code):
         try:
-            program_csv = self.csv_file.parent / 'programs.csv'
-            with open(program_csv, 'r', encoding='utf-8-sig') as file:
-                reader = csv.DictReader(file)
-                for row in reader:
-                    if row["College Code"] == college_code.strip():
-                        return True    
+            conn = get_connection()
+            cursor = conn.cursor()
+            cursor.execute(
+                "SELECT 1 FROM programs WHERE college_code = %s LIMIT 1", (college_code,)
+            )
+            return cursor.fetchone() is not None
+ 
+        except Error as e:
+            print(f"Error checking college programs: {e}")
             return False
-        except FileNotFoundError:
-            return False
+        finally:
+            cursor.close()
+            conn.close()
+
+    ALLOWED_COLUMNS = {
+        "College Code": "college_code",
+        "College Name": "college_name",
+    }
         
     def sort_college(self, column, reverse=False):
-        try:
-            with open(self.csv_file, 'r', newline='', encoding='utf-8') as file:
-                reader = csv.DictReader(file)
-                rows = list(reader)
-
-            rows.sort(key=lambda r: r.get(column, '').lower(), reverse=reverse)
-            return rows
-
-        except Exception as e:
-            print(f"Error sorting college: {e}")
+        sql_col = self.ALLOWED_COLUMNS.get(column)
+        if not sql_col:
+            print(f"Invalid sort column: {column}")
             return []
+        try:
+            direction = "DESC" if reverse else "ASC"
+            conn = get_connection()
+            cursor = conn.cursor(dictionary=True)
+            cursor.execute(f"""
+                SELECT college_code AS 'College Code',
+                       college_name AS 'College Name'
+                FROM colleges
+                ORDER BY {sql_col} {direction}
+            """)
+            return cursor.fetchall()
+ 
+        except Error as e:
+            print(f"Sort college error: {e}")
+            return []
+        finally:
+            cursor.close()
+            conn.close()

@@ -228,16 +228,6 @@ class ProgramPanel(Frame):
             self.tree.heading(col, text=col, anchor=CENTER)
         self.tree.heading("#0", text="", anchor="w")
 
-        # vsb = ttk.Scrollbar(table_frame, orient="vertical",
-        #                     command=self.tree.yview)
-        # vsb.grid(row=0, column=1, sticky="ns")
-        # self.tree.configure(yscrollcommand=vsb.set)
-
-        # hsb = ttk.Scrollbar(table_frame, orient="horizontal",
-        #                     command=self.tree.xview)
-        # hsb.grid(row=1, column=0, sticky="ew")
-        # self.tree.configure(xscrollcommand=hsb.set)
-
         self.tree.bind("<Button-1>",
             lambda e: "break"
             if self.tree.identify_region(e.x, e.y) == "separator" else None)

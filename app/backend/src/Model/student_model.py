@@ -43,12 +43,12 @@ class StudentModel:
             conn = get_connection()
             cursor = conn.cursor(dictionary=True)
             cursor.execute("""
-                SELECT student_id      AS `ID Number`,
-                    student_first_name AS `First Name`,
-                    student_last_name  AS `Last Name`,
-                    gender             AS `Gender`,
-                    student_year_level AS `Year Level`,
-                    program_code       AS `Program`
+                SELECT student_id      AS 'ID Number',
+                    student_first_name AS 'First Name',
+                    student_last_name  AS 'Last Name',
+                    gender             AS 'Gender',
+                    student_year_level AS 'Year Level',
+                    program_code       AS 'Program'
                 FROM students
             """)
             return cursor.fetchall()
@@ -171,12 +171,12 @@ class StudentModel:
             conn = get_connection()
             cursor = conn.cursor(dictionary=True)
             cursor.execute(f"""
-                SELECT student_id          AS `ID Number`,
-                       student_first_name  AS `First Name`,
-                       student_last_name   AS `Last Name`,
-                       gender              AS `Gender`,
-                       student_year_level  AS `Year Level`,
-                       program_code        AS `Program`
+                SELECT student_id          AS 'ID Number',
+                       student_first_name  AS 'First Name',
+                       student_last_name   AS 'Last Name',
+                       gender              AS 'Gender',
+                       student_year_level  AS 'Year Level',
+                       program_code        AS 'Program'
                 FROM students
                 ORDER BY {sql_col} {direction}
             """)
