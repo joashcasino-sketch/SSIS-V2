@@ -17,8 +17,6 @@ from student_controller import StudentController
 
 def relative_to_assets(path: str) -> Path:
     return ASSETS_PATH / Path(path)
-
-
 class StudentPanel(Frame):
     def __init__(self, parent, controller, user_role="user"):
         super().__init__(parent, bg="#F8ECD1")
@@ -26,15 +24,12 @@ class StudentPanel(Frame):
         self.user_role = user_role
         self.student_controller = StudentController(self, user_role)
 
-        # Allow this frame itself to scale
-        self.rowconfigure(0, weight=0)   # header bar
-        self.rowconfigure(1, weight=1)   # main body
-        self.columnconfigure(0, weight=0)  # sidebar
-        self.columnconfigure(1, weight=1)  # content
+        self.rowconfigure(0, weight=0)  
+        self.rowconfigure(1, weight=1)   
+        self.columnconfigure(0, weight=0)  
+        self.columnconfigure(1, weight=1) 
 
         self.setup_ui()
-
-    # ─────────────────────────── UI SETUP ────────────────────────────────────
 
     def setup_ui(self):
         self._build_header()
@@ -42,8 +37,6 @@ class StudentPanel(Frame):
         self._build_content()
         self.setup_buttons(self.user_role)
         self.populate_students()
-
-    # ── Header bar (spans full width) ────────────────────────────────────────
 
     def _build_header(self):
         self.header = Frame(self, bg="#85586F", height=85)
@@ -58,8 +51,6 @@ class StudentPanel(Frame):
         except Exception:
             Label(self.header, text="DeB", bg="#85586F",
                   fg="white", font=("Arial", 20, "bold")).place(x=10, y=20)
-
-    # ── Sidebar (fixed width, scales vertically) ──────────────────────────────
 
     def _build_sidebar(self):
         self.sidebar = Frame(self, bg="#DEB6AB", width=250)
@@ -85,7 +76,7 @@ class StudentPanel(Frame):
                     relief="flat", activebackground="#DEB6AB", cursor="hand2",
                 )
                 btn.image = img
-                btn.image.configure(width=215)          # prevent GC
+                btn.image.configure(width=215)          
                 btn.grid(row=i, column=0, padx=15,
                          pady=(10 if i == 0 else 15, 0), sticky="ew")
             except Exception:
@@ -98,7 +89,6 @@ class StudentPanel(Frame):
                 ).grid(row=i, column=0, padx=15, pady=(10 if i == 0 else 5, 0),
                        sticky="ew")
 
-        # Settings at the very bottom
         try:
             self.setting_img = PhotoImage(file=relative_to_assets("settings_button.png"))
             settings_btn = Button(
@@ -122,9 +112,7 @@ class StudentPanel(Frame):
         self.content = Frame(self, bg="#F8ECD1")
         self.content.grid(row=1, column=1, sticky="nsew")
 
-        # Row 0 → toolbar (search / sort)
-        # Row 1 → action bar (title / buttons)
-        # Row 2 → table  ← this row expands
+       
         self.content.rowconfigure(0, weight=0)
         self.content.rowconfigure(1, weight=0)
         self.content.rowconfigure(2, weight=1)
@@ -248,14 +236,11 @@ class StudentPanel(Frame):
         self.tree.heading("#0", text="", anchor="w")
 
 
-        # ── Bindings ───────────────────────────────────────────────────────
         self.tree.bind("<Escape>", self.deselect_all)
         self.tree.bind("<Button-1>", self.on_click)
            
         self.tree.bind("<B1-Motion>", self.on_drag_select)
         self.tree.bind("<ButtonRelease-1>", self.on_drag_release)
-
-    # ─────────────────────────── DATA ────────────────────────────────────────
 
     def populate_students(self, data=None):
         for row in self.tree.get_children():
@@ -280,7 +265,6 @@ class StudentPanel(Frame):
         except Exception as e:
             print(f"Error populating students {e}")
 
-    # ─────────────────────────── DIALOGS ─────────────────────────────────────
 
     def open_add_dialog(self):
         dlg = Path(__file__).resolve().parent.parent / "dialogs"
@@ -322,8 +306,6 @@ class StudentPanel(Frame):
             ids = [self.tree.item(i)["values"][0] for i in selected]
             self.student_controller.bulk_delete_students(ids)
 
-    # ─────────────────────────── HELPERS ─────────────────────────────────────
-
     def on_drag_select(self, event):
         item = self.tree.identify_row(event.y)
         if item:
@@ -362,7 +344,6 @@ class StudentPanel(Frame):
         
     def deselect_all(self, event=None):
         self.tree.selection_set([])
-
 
 if __name__ == "__main__":
     from main_panel import MainPanel

@@ -36,7 +36,7 @@ class MainPanel:
         from colleges_panel import CollegePanel
 
         panels_config = [
-        (StudentPanel, "student"),  # ← None, handled internally
+        (StudentPanel, "student"),  
         (ProgramPanel, "program"),
         (CollegePanel, "college")
         ]
@@ -49,9 +49,14 @@ class MainPanel:
 
 
     def show_panel(self, name):
+        print(f"panels type: {type(self.panels)}, value: {self.panels}")
+        if name not in self.panels:
+            print(f"Panel '{name}' not found. Available: {list(self.panels.keys())}")
+            return
         panel = self.panels[name]
         panel.lift()
         self.current_panel = panel
+
 
 
     def run(self):

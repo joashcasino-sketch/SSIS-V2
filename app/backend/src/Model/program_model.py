@@ -39,11 +39,13 @@ class ProgramModel:
                 conn = get_connection()
                 cursor = conn.cursor(dictionary=True)
                 cursor.execute("""
-                    SELECT program_code AS 'Program Code',
-                        program_name AS 'Program Name',
-                        college_code AS 'College Code'
-                    FROM programs
-                """)
+                    SELECT p.program_code AS 'Program Code',
+                        p.program_name AS 'Program Name',
+                        p.college_code AS 'College Code',
+                        c.college_name AS 'College Name'
+                    FROM programs p
+                    JOIN colleges c ON p.college_code = c.college_code
+                    """)
                 return cursor.fetchall()
             except Error as e:
                 print(f"Error fetching programs: {e}")
@@ -146,9 +148,10 @@ class ProgramModel:
 
         
     ALLOWED_COLUMNS = {
-        "Program Code": "program_code",
-        "Program Name": "program_name",
-        "College Code": "college_code",
+        "Program Code": "p.program_code",
+        "Program Name": "p.program_name",
+        "College Code": "p.college_code",
+        "College Name": "c.college_name",  
     }
 
     def sort_program(self, column, reverse=False):
@@ -161,10 +164,12 @@ class ProgramModel:
             conn = get_connection()
             cursor = conn.cursor(dictionary=True)
             cursor.execute(f"""
-                SELECT program_code AS 'Program Code',
-                    program_name AS 'Program Name',
-                    college_code AS 'College Code'
-                FROM programs
+                SELECT p.program_code AS 'Program Code',
+                    p.program_name AS 'Program Name',
+                    p.college_code AS 'College Code',
+                    c.college_name AS 'College Name'
+                FROM programs p
+                JOIN colleges c ON p.college_code = c.college_code
                 ORDER BY {sql_col} {direction}
             """)
             return cursor.fetchall()
@@ -183,14 +188,17 @@ class ProgramModel:
             cursor = conn.cursor(dictionary=True)
             like = f"%{query.strip()}%"
             cursor.execute("""
-                SELECT program_code AS 'Program Code',
-                    program_name AS 'Program Name',
-                    college_code AS 'College Code'
-                FROM programs
-                WHERE program_code LIKE %s
-                OR program_name LIKE %s
-                OR college_code LIKE %s
-            """, (like,) * 3)
+                SELECT p.program_code AS 'Program Code',
+                    p.program_name AS 'Program Name',
+                    p.college_code AS 'College Code',
+                    c.college_name AS 'College Name'
+                FROM programs p
+                JOIN colleges c ON p.college_code = c.college_code
+                WHERE p.program_code LIKE %s
+                OR p.program_name LIKE %s
+                OR p.college_code LIKE %s
+                OR c.college_name LIKE %s
+            """, (like,) * 4)
             return cursor.fetchall()
 
         except Error as e:

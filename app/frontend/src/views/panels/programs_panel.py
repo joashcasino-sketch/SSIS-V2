@@ -1,4 +1,3 @@
-import csv
 from pathlib import Path
 import sys
 import tkinter as tk
@@ -26,14 +25,12 @@ class ProgramPanel(Frame):
         self.user_role = user_role
         self.program_controller = ProgramController(self, user_role)
 
-        self.rowconfigure(0, weight=0)     # header
-        self.rowconfigure(1, weight=1)     # main body
-        self.columnconfigure(0, weight=0)  # sidebar
-        self.columnconfigure(1, weight=1)  # content
+        self.rowconfigure(0, weight=0)     
+        self.rowconfigure(1, weight=1)     
+        self.columnconfigure(0, weight=0) 
+        self.columnconfigure(1, weight=1)  
 
         self.setup_ui()
-
-    # ─────────────────────────── UI SETUP ────────────────────────────────────
 
     def setup_ui(self):
         self._build_header()
@@ -42,7 +39,6 @@ class ProgramPanel(Frame):
         self.setup_buttons(self.user_role)
         self.populate_programs()
 
-    # ── Header ───────────────────────────────────────────────────────────────
 
     def _build_header(self):
         self.header = Frame(self, bg="#85586F", height=85)
@@ -56,8 +52,6 @@ class ProgramPanel(Frame):
         except Exception:
             Label(self.header, text="DeB", bg="#85586F",
                   fg="white", font=("Arial", 20, "bold")).place(x=10, y=20)
-
-    # ── Sidebar ───────────────────────────────────────────────────────────────
 
     def _build_sidebar(self):
         self.sidebar = Frame(self, bg="#DEB6AB", width=250)
@@ -82,7 +76,7 @@ class ProgramPanel(Frame):
                     relief="flat", activebackground="#DEB6AB", cursor="hand2",
                 )
                 btn.image = img
-                btn.image.configure(width=215)          # prevent GC
+                btn.image.configure(width=215)         
                 btn.grid(row=i, column=0, padx=15,
                          pady=(10 if i == 0 else 15, 0), sticky="ew")
             except Exception:
@@ -109,14 +103,12 @@ class ProgramPanel(Frame):
                 relief="flat", cursor="hand2",
             ).grid(row=11, column=0, padx=15, pady=10, sticky="sew")
 
-    # ── Content ───────────────────────────────────────────────────────────────
-
     def _build_content(self):
         self.content = Frame(self, bg="#F8ECD1")
         self.content.grid(row=1, column=1, sticky="nsew")
-        self.content.rowconfigure(0, weight=0)   # toolbar
-        self.content.rowconfigure(1, weight=0)   # action bar
-        self.content.rowconfigure(2, weight=1)   # table ← expands
+        self.content.rowconfigure(0, weight=0)  
+        self.content.rowconfigure(1, weight=0)   
+        self.content.rowconfigure(2, weight=1)  
         self.content.columnconfigure(0, weight=1)
 
         self._build_toolbar()
@@ -234,7 +226,6 @@ class ProgramPanel(Frame):
         self.tree.bind("<B1-Motion>", self.on_drag_select)
         self.tree.bind("<ButtonRelease-1>", self.on_drag_release)
 
-    # ─────────────────────────── DATA ────────────────────────────────────────
 
     def populate_programs(self, data=None):
         for row in self.tree.get_children():
@@ -245,11 +236,7 @@ class ProgramPanel(Frame):
 
         try:
             if data is None:
-                csv_path = (BASE_DIR.parent.parent.parent.parent
-                            / "backend" / "data" / "programs.csv")
-                with open(csv_path, newline="", encoding="utf-8") as f:
-                    data = list(csv.DictReader(f))
-
+                data = self.program_controller.get_all_programs()
             for i, row in enumerate(data):
                 tag = "odd" if i % 2 == 0 else "even"
                 self.tree.insert("", "end", text=str(i + 1), values=(
@@ -259,7 +246,6 @@ class ProgramPanel(Frame):
         except FileNotFoundError:
             print("programs.csv not found.")
 
-    # ─────────────────────────── DIALOGS ─────────────────────────────────────
 
     def open_add_dialog(self):
         dlg = Path(__file__).resolve().parent.parent / "dialogs"
@@ -294,8 +280,6 @@ class ProgramPanel(Frame):
             ids = [self.tree.item(i)["values"][0] for i in selected]
             self.program_controller.bulk_delete_programs(ids)
 
-    # ─────────────────────────── HELPERS ─────────────────────────────────────
-
     def setup_buttons(self, user_role):
         disabled_color = "#A49A97"
         if user_role != "admin":
@@ -322,7 +306,6 @@ class ProgramPanel(Frame):
 
     def on_drag_release(self, event):
         pass
-
 
 if __name__ == "__main__":
     from main_panel import MainPanel

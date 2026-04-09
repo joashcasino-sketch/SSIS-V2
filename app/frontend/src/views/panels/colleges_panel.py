@@ -1,4 +1,3 @@
-import csv
 from pathlib import Path
 import sys
 import tkinter as tk
@@ -18,7 +17,6 @@ from sort_dropdown import SortDropdown
 def relative_to_assets(path: str) -> Path:
     return ASSETS_PATH / Path(path)
 
-
 class CollegePanel(Frame):
     def __init__(self, parent, controller, user_role="user"):
         super().__init__(parent, bg="#F8ECD1")
@@ -26,14 +24,13 @@ class CollegePanel(Frame):
         self.user_role = user_role
         self.college_controller = CollegeController(self, user_role)
 
-        self.rowconfigure(0, weight=0)     # header
-        self.rowconfigure(1, weight=1)     # main body
-        self.columnconfigure(0, weight=0)  # sidebar
-        self.columnconfigure(1, weight=1)  # content
+        self.rowconfigure(0, weight=0)    
+        self.rowconfigure(1, weight=1)     
+        self.columnconfigure(0, weight=0) 
+        self.columnconfigure(1, weight=1) 
 
         self.setup_ui()
 
-    # ─────────────────────────── UI SETUP ────────────────────────────────────
 
     def setup_ui(self):
         self._build_header()
@@ -42,7 +39,6 @@ class CollegePanel(Frame):
         self.setup_buttons(self.user_role)
         self.populate_college()
 
-    # ── Header ───────────────────────────────────────────────────────────────
 
     def _build_header(self):
         self.header = Frame(self, bg="#85586F", height=85)
@@ -57,7 +53,6 @@ class CollegePanel(Frame):
             Label(self.header, text="DeB", bg="#85586F",
                   fg="white", font=("Arial", 20, "bold")).place(x=10, y=20)
 
-    # ── Sidebar ───────────────────────────────────────────────────────────────
 
     def _build_sidebar(self):
         self.sidebar = Frame(self, bg="#DEB6AB", width=250)
@@ -109,7 +104,6 @@ class CollegePanel(Frame):
                 relief="flat", cursor="hand2",
             ).grid(row=11, column=0, padx=15, pady=10, sticky="sew")
 
-    # ── Content ───────────────────────────────────────────────────────────────
 
     def _build_content(self):
         self.content = Frame(self, bg="#F8ECD1")
@@ -226,23 +220,12 @@ class CollegePanel(Frame):
             self.tree.heading(col, text=col, anchor=CENTER)
         self.tree.heading("#0", text="", anchor="w")
 
-        # vsb = ttk.Scrollbar(table_frame, orient="vertical",
-        #                     command=self.tree.yview)
-        # vsb.grid(row=0, column=1, sticky="ns")
-        # self.tree.configure(yscrollcommand=vsb.set)
-
-        # hsb = ttk.Scrollbar(table_frame, orient="horizontal",
-        #                     command=self.tree.xview)
-        # hsb.grid(row=1, column=0, sticky="ew")
-        # self.tree.configure(xscrollcommand=hsb.set)
-
         self.tree.bind("<Button-1>",
             lambda e: "break"
             if self.tree.identify_region(e.x, e.y) == "separator" else None)
         self.tree.bind("<B1-Motion>", self.on_drag_select)
         self.tree.bind("<ButtonRelease-1>", self.on_drag_release)
 
-    # ─────────────────────────── DATA ────────────────────────────────────────
 
     def populate_college(self, data=None):
         for row in self.tree.get_children():
@@ -253,11 +236,7 @@ class CollegePanel(Frame):
 
         try:
             if data is None:
-                csv_path = (BASE_DIR.parent.parent.parent.parent
-                            / "backend" / "data" / "colleges.csv")
-                with open(csv_path, newline="", encoding="utf-8") as f:
-                    data = list(csv.DictReader(f))
-
+               data = self.college_controller.get_all_colleges()
             for i, row in enumerate(data):
                 tag = "odd" if i % 2 == 0 else "even"
                 self.tree.insert("", "end", text=str(i + 1), values=(
@@ -267,7 +246,6 @@ class CollegePanel(Frame):
         except FileNotFoundError:
             print("colleges.csv not found.")
 
-    # ─────────────────────────── DIALOGS ─────────────────────────────────────
 
     def open_add_dialog(self):
         dlg = Path(__file__).resolve().parent.parent / "dialogs"
@@ -302,7 +280,6 @@ class CollegePanel(Frame):
             ids = [self.tree.item(i)["values"][0] for i in selected]
             self.college_controller.bulk_delete_colleges(ids)
 
-    # ─────────────────────────── HELPERS ─────────────────────────────────────
 
     def setup_buttons(self, user_role):
         disabled_color = "#A49A97"

@@ -26,6 +26,9 @@ class ProgramController:
             messagebox.showerror("Error", "Program ID Already Exist!")
         return success
     
+    def get_all_programs(self):
+        return self.model.get_all_programs()
+    
     def get_programs_by_college(self, college_code):
         return self.model.get_programs_by_college(college_code)
 

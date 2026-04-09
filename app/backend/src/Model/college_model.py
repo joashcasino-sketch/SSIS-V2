@@ -11,8 +11,10 @@ from mysql.connector import Error
 class CollegeModel:
 
     def add_college(self, college_data):
+        conn = None
+        cursor = None
         try:
-            if self.program_exist(college_data.get('Program Code')):
+            if self.college_exist(college_data.get('College Code')):
                 return False
                     
             conn = get_connection()
@@ -32,8 +34,8 @@ class CollegeModel:
                 print(f"Error adding colleges: {e}")
                 return False
         finally:
-            cursor.close()
-            conn.close()
+            if cursor: cursor.close()
+            if conn: conn.close()
 
     def get_all_colleges(self):
         try:
