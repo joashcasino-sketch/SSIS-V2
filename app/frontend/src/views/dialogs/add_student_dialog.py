@@ -176,9 +176,14 @@ class AddStudentDialog:
         first_name = self.first_name_entry.get().strip()
         last_name  = self.last_name_entry.get().strip()
         student_id = self.id_entry.get().strip()
+        program    = self.program_var.get().strip()
 
         if not student_id or not first_name or not last_name:
             messagebox.showerror("Error", "ID Number, First Name, and Last Name are required!")
+            return
+
+        if not program or program == "No programs found":
+            messagebox.showerror("Error", "Please select a valid Program!")
             return
 
         student_data = {

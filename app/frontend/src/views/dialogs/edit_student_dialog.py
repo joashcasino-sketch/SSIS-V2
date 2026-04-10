@@ -186,14 +186,16 @@ class UpdateStudentDialog:
         self.id_entry.config(state="disabled")
 
         college_code = self.college_var.get().split(" - ")[0]
+        full_name = self.name_entry.get().strip().split(" ", 1)  
 
         student_data = {
-            'ID Number': id_value,
-            'Name': self.name_entry.get().strip(),
-            'Gender': self.gender_var.get(),
+            'ID Number':  id_value,
+            'First Name': full_name[0],
+            'Last Name':  full_name[1] if len(full_name) > 1 else "",
+            'Gender':     self.gender_var.get(),
             'Year Level': self.year_var.get(),
-            'Program': self.program_var.get(),
-            'College': college_code
+            'Program':    self.program_var.get(),
+            'College':    college_code,
         }
 
         if not all(student_data.values()):

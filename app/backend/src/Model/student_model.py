@@ -6,12 +6,15 @@ sys.path.insert(0, str(DB_PATH))
 
 from db_connection import get_connection
 from mysql.connector import Error
+
 class StudentModel:
    
     def add_student(self, student_data):
+        conn = None
+        cursor = None
         try:
             if self.student_exist(student_data.get('ID Number')):
-                return False
+                return "duplicate"
             
             conn = get_connection()
             cursor = conn.cursor()
@@ -29,16 +32,18 @@ class StudentModel:
                 student_data["Program"],
             ))
             conn.commit()
-            return True
+            return "success"
             
         except Exception as e:
             print(f"Error adding students: {e}")
-            return False
+            return "error"
         finally:
-            cursor.close()
-            conn.close()
+            if cursor: cursor.close()
+            if conn: conn.close()
         
     def get_all_students(self):
+        conn = None
+        cursor = None
         try:
             conn = get_connection()
             cursor = conn.cursor(dictionary=True)
@@ -60,10 +65,12 @@ class StudentModel:
             print(f"Error fetching students: {e}")
             return []
         finally:
-            cursor.close()
-            conn.close()
+            if cursor: cursor.close()
+            if conn: conn.close()
 
     def student_exist(self, student_id):
+        conn = None
+        cursor = None
         try:
             conn = get_connection()
             cursor = conn.cursor()
@@ -75,10 +82,12 @@ class StudentModel:
             print(f"Error checking students: {e}")
             return False
         finally:
-            cursor.close()
-            conn.close()
+            if cursor: cursor.close()
+            if conn: conn.close()
         
     def edit_student(self, student_data):
+        conn = None
+        cursor = None
         try:
             conn = get_connection()
             cursor = conn.cursor()
@@ -106,10 +115,12 @@ class StudentModel:
             print(f"Error editing student: {e}")
             return False
         finally:
-            cursor.close()
-            conn.close()
+            if cursor: cursor.close()
+            if conn: conn.close()
 
     def delete_student(self, student_id):
+        conn = None
+        cursor = None
         try:
             conn = get_connection()
             cursor = conn.cursor()
@@ -122,10 +133,12 @@ class StudentModel:
             print(f"Error deleting student {e}")
             return False
         finally:
-            cursor.close()
-            conn.close()
+            if cursor: cursor.close()
+            if conn: conn.close()
     
     def search_student(self, query):
+        conn = None
+        cursor = None
         try:
             conn = get_connection()
             cursor = conn.cursor(dictionary=True)
@@ -155,8 +168,8 @@ class StudentModel:
             print(f"Search student error: {e}")
             return []
         finally:
-            cursor.close()
-            conn.close(  )
+            if cursor: cursor.close()
+            if conn: conn.close()
         
     ALLOWED_COLUMNS = {
         "ID Number":   "s.student_id",
@@ -170,6 +183,8 @@ class StudentModel:
     }
 
     def sort_student(self, column, reverse=False):
+        conn = None
+        cursor = None
         sql_col = self.ALLOWED_COLUMNS.get(column)
         if not sql_col:
             print(f"Invalid sort column: {column}")
@@ -196,10 +211,12 @@ class StudentModel:
             print(f"Sort student error: {e}")
             return []
         finally:
-            cursor.close()
-            conn.close()
+            if cursor: cursor.close()
+            if conn: conn.close()
         
     def bulk_edit_student(self, student_id, changes):
+        conn = None
+        cursor = None
         allowed_fields = {
             "First Name":  "student_first_name",
             "Last Name":   "student_last_name",
@@ -227,5 +244,5 @@ class StudentModel:
             print(f"Bulk edit error: {e}")
             return False
         finally:
-            cursor.close()
-            conn.close()
+            if cursor: cursor.close()
+            if conn: conn.close()

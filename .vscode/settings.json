@@ -1,0 +1,29 @@
+{
+    "python.analysis.extraPaths": [
+        "./app/backend/src",
+        "./app/frontend/src/views"
+    ],
+    "sqltools.connections": [
+        {
+            "mysqlOptions": {
+                "authProtocol": "xprotocol",
+                "enableSsl": "Disabled"
+            },
+            "ssh": "Disabled",
+            "previewLimit": 50,
+            "server": "localhost",
+            "port": 33060,
+            "driver": "MySQL",
+            "name": "MySQL Local",
+            "database": "SSIS",
+            "username": "root",
+            "password": "239204",
+            "connectionTimeout": 30
+        }
+    ],
+    "files.exclude": {
+        "MySQL Local.session.sql": true,
+        "**/csvhandler.py": true,
+        "students.csv": true
+    }
+}

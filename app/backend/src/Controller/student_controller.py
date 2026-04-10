@@ -17,15 +17,15 @@ class StudentController:
         self.user_role = user_role
 
     def add_student_from_dialog(self, student_data):
-        success = self.model.add_student(student_data)
-
-        if success:
+        result = self.model.add_student(student_data)
+        if result == "success":
             messagebox.showinfo("Success", "Student Added Successfully!")
             self.views.populate_students()
+        elif result == "duplicate":
+            messagebox.showerror("Error", "Student ID already exists!")
         else:
-            messagebox.showerror("Error", "Student ID Already Exist!")
-        return success
-    
+            messagebox.showerror("Error", "Failed to add student. Check your database connection or program code.")
+            
     def get_all_students(self):
         return self.model.get_all_students()
     
