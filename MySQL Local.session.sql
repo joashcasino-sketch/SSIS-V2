@@ -62,7 +62,13 @@ FIELDS TERMINATED BY ','
 LINES TERMINATED BY '\r\n'
 (program_code, program_name, college_code);
 
+LOAD DATA INFILE 'C:/ProgramData/MySQL/MySQL Server 9.6/Uploads/students.csv'
+INTO TABLE students
+FIELDS TERMINATED BY ','
+OPTIONALLY ENCLOSED BY '"'
+LINES TERMINATED BY '\r\n'
+(student_id, student_first_name, student_last_name, gender, student_year_level, program_code);
+
 ALTER TABLE programs MODIFY program_name VARCHAR(100) NOT NULL;
 
-ALTER TABLE programs MODIFY program_code VARCHAR(20) NOT NULL;
-ALTER TABLE programs MODIFY program_name VARCHAR(100) NOT NULL;
+ALTER TABLE students MODIFY program_code VARCHAR(20) NOT NULL;

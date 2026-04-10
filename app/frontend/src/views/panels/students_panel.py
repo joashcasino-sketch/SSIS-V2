@@ -129,11 +129,26 @@ class StudentPanel(Frame):
         self._build_pagination() 
 
     def _build_toolbar(self):
-        """Search bar + sort dropdown row."""
         toolbar = Frame(self.content, bg="#F8ECD1", height=55)
         toolbar.grid(row=0, column=0, sticky="ew", padx=20, pady=(10, 0))
         toolbar.grid_propagate(False)
-        toolbar.columnconfigure(0, weight=1)   # search entry stretches
+        toolbar.columnconfigure(1, weight=1)   
+
+        try:
+            self.refresh_img = PhotoImage(file=relative_to_assets("Refresh_Button.png"))
+            refresh_btn = Button(
+                toolbar, image=self.refresh_img,
+                borderwidth=0, highlightthickness=0,
+                command=self.on_refresh,
+                relief="flat", activebackground="#F8ECD1", cursor="hand2",
+            )
+        except Exception:
+            refresh_btn = Button(
+                toolbar, text="↺", font=("Lato", 12),
+                bg="#85586F", fg="white", relief="flat",
+                cursor="hand2", command=self.on_refresh,
+            )
+        refresh_btn.grid(row=0, column=0, padx=(0, 6), pady=10)
 
         self.search_entry = Entry(
             toolbar,
@@ -141,8 +156,8 @@ class StudentPanel(Frame):
             highlightthickness=1, highlightbackground="#85586F",
             font=("Lato", 11), relief="flat"
         )
-        self.search_entry.grid(row=0, column=0, sticky="ew",
-                               ipady=6, padx=(0, 6), pady=10)
+        self.search_entry.grid(row=0, column=1, sticky="ew",
+                            ipady=6, padx=(0, 6), pady=10)
         self.search_entry.bind("<Return>", lambda e: self.on_search())
 
         try:
@@ -159,14 +174,14 @@ class StudentPanel(Frame):
                 bg="#85586F", fg="white", relief="flat",
                 cursor="hand2", command=self.on_search,
             )
-        search_btn.grid(row=0, column=1, padx=(0, 6), pady=10)
+        search_btn.grid(row=0, column=2, padx=(0, 6), pady=10)
 
         self.sort_dropdown = SortDropdown(
             toolbar,
             on_select_callback=self.student_controller.sort_student
         )
-        self.sort_dropdown.grid(row=0, column=2, pady=10)
-
+        self.sort_dropdown.grid(row=0, column=3, pady=10)
+    
     def _build_action_bar(self):
         """Title label + CRUD buttons row."""
         action_bar = Frame(self.content, bg="#F8ECD1")
@@ -275,7 +290,7 @@ class StudentPanel(Frame):
                     row["Gender"],
                     row["Year Level"],
                     row["Program"],
-                    "",  
+                    row.get("College", "")
                 ), tags=(tag,))
 
             self._update_pagination_controls()
@@ -343,6 +358,12 @@ class StudentPanel(Frame):
         else:
             for btn in (self.delete_button, self.edit_button):
                 btn.config(state="normal")
+
+    def on_refresh(self):
+        self.search_entry.delete(0, "end")
+        self._full_data = []
+        self.current_page = 1
+        self.populate_students()
 
     def on_search(self):
         query = self.search_entry.get().strip()

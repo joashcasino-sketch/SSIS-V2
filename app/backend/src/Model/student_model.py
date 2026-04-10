@@ -43,13 +43,16 @@ class StudentModel:
             conn = get_connection()
             cursor = conn.cursor(dictionary=True)
             cursor.execute("""
-                SELECT student_id      AS 'ID Number',
-                    student_first_name AS 'First Name',
-                    student_last_name  AS 'Last Name',
-                    gender             AS 'Gender',
-                    student_year_level AS 'Year Level',
-                    program_code       AS 'Program'
-                FROM students
+                SELECT s.student_id          AS 'ID Number',
+                   s.student_first_name  AS 'First Name',
+                   s.student_last_name   AS 'Last Name',
+                   s.gender              AS 'Gender',
+                   s.student_year_level  AS 'Year Level',
+                   s.program_code        AS 'Program',
+                   c.college_code        AS 'College'
+                FROM students s
+                LEFT JOIN programs p ON s.program_code = p.program_code
+                LEFT JOIN colleges c ON p.college_code = c.college_code
             """)
             return cursor.fetchall()
 
@@ -129,20 +132,23 @@ class StudentModel:
             like = f"%{query.strip()}%"
 
             cursor.execute("""
-                SELECT  student_id          AS   'ID Number',
-                        student_first_name  AS   'First Name',
-                        student_last_name   AS 'Last Name',
-                        gender              AS 'Gender',
-                        student_year_level  AS 'Year Level',
-                        program_code        AS 'Program'
-                FROM students WHERE student_id LIKE %s
-                                OR  student_first_name  LIKE %s
-                                OR  student_last_name   LIKE %s
-                                OR  gender              LIKE %s
-                                OR  student_year_level  LIKE %s
-                                OR  program_code        LIKE %s
-
-            """,(like,) * 6)
+                SELECT s.student_id         AS 'ID Number',
+                    s.student_first_name AS 'First Name',
+                    s.student_last_name  AS 'Last Name',
+                    s.gender             AS 'Gender',
+                    s.student_year_level AS 'Year Level',
+                    s.program_code       AS 'Program',
+                    c.college_code       AS 'College'
+                FROM students s
+                LEFT JOIN programs p ON s.program_code = p.program_code
+                LEFT JOIN colleges c ON p.college_code = c.college_code
+                WHERE s.student_id          LIKE %s
+                OR    s.student_first_name  LIKE %s
+                OR    s.student_last_name   LIKE %s
+                OR    s.gender              LIKE %s
+                OR    s.student_year_level  LIKE %s
+                OR    s.program_code        LIKE %s
+            """, (like,) * 6)
             return cursor.fetchall()
         
         except Error as e:
@@ -153,12 +159,14 @@ class StudentModel:
             conn.close(  )
         
     ALLOWED_COLUMNS = {
-        "ID Number":   "student_id",
-        "First Name":  "student_first_name",
-        "Last Name":   "student_last_name",
-        "Gender":      "gender",
-        "Year Level":  "student_year_level",
-        "Program":     "program_code",
+        "ID Number":   "s.student_id",
+        "Name":        "s.student_last_name",
+        "First Name":  "s.student_first_name",
+        "Last Name":   "s.student_last_name",
+        "Gender":      "s.gender",
+        "Year Level":  "s.student_year_level",
+        "Program":     "s.program_code",
+        "College":     "c.college_code",
     }
 
     def sort_student(self, column, reverse=False):
@@ -171,13 +179,16 @@ class StudentModel:
             conn = get_connection()
             cursor = conn.cursor(dictionary=True)
             cursor.execute(f"""
-                SELECT student_id          AS 'ID Number',
-                       student_first_name  AS 'First Name',
-                       student_last_name   AS 'Last Name',
-                       gender              AS 'Gender',
-                       student_year_level  AS 'Year Level',
-                       program_code        AS 'Program'
-                FROM students
+                SELECT s.student_id          AS 'ID Number',
+                       s.student_first_name  AS 'First Name',
+                       s.student_last_name   AS 'Last Name',
+                       s.gender              AS 'Gender',
+                       s.student_year_level  AS 'Year Level',
+                       s.program_code        AS 'Program',
+                       c.college_code        AS 'College'                           
+                FROM students s
+                LEFT JOIN programs p ON s.program_code = p.program_code
+                LEFT JOIN colleges c ON p.college_code = c.college_code
                 ORDER BY {sql_col} {direction}
             """)
             return cursor.fetchall()

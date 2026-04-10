@@ -126,7 +126,23 @@ class ProgramPanel(Frame):
         toolbar = Frame(self.content, bg="#F8ECD1", height=55)
         toolbar.grid(row=0, column=0, sticky="ew", padx=20, pady=(10, 0))
         toolbar.grid_propagate(False)
-        toolbar.columnconfigure(0, weight=1)
+        toolbar.columnconfigure(1, weight=1)
+
+        try:
+            self.refresh_img = PhotoImage(file=relative_to_assets("Refresh_Button.png"))
+            refresh_btn = Button(
+                toolbar, image=self.refresh_img,
+                borderwidth=0, highlightthickness=0,
+                command=self.on_refresh,
+                relief="flat", activebackground="#F8ECD1", cursor="hand2",
+            )
+        except Exception:
+            refresh_btn = Button(
+                toolbar, text="↺", font=("Lato", 12),
+                bg="#85586F", fg="white", relief="flat",
+                cursor="hand2", command=self.on_refresh,
+            )
+        refresh_btn.grid(row=0, column=0, padx=(0, 6), pady=10)
 
         self.search_entry = Entry(
             toolbar,
@@ -134,8 +150,8 @@ class ProgramPanel(Frame):
             highlightthickness=1, highlightbackground="#85586F",
             font=("Lato", 11), relief="flat"
         )
-        self.search_entry.grid(row=0, column=0, sticky="ew",
-                               ipady=6, padx=(0, 6), pady=10)
+        self.search_entry.grid(row=0, column=1, sticky="ew",
+                            ipady=6, padx=(0, 6), pady=10)
         self.search_entry.bind("<Return>", lambda e: self.on_search())
 
         try:
@@ -152,15 +168,15 @@ class ProgramPanel(Frame):
                 bg="#85586F", fg="white", relief="flat",
                 cursor="hand2", command=self.on_search,
             )
-        search_btn.grid(row=0, column=1, padx=(0, 6), pady=10)
+        search_btn.grid(row=0, column=2, padx=(0, 6), pady=10)
 
         self.sort_dropdown = SortDropdown(
             toolbar,
             on_select_callback=self.program_controller.sort_program,
             options=['Program Code', 'Program Name', 'College Code', 'College Name']
         )
-        self.sort_dropdown.grid(row=0, column=2, pady=10)
-
+        self.sort_dropdown.grid(row=0, column=3, pady=10)
+    
     def _build_action_bar(self):
         action_bar = Frame(self.content, bg="#F8ECD1")
         action_bar.grid(row=1, column=0, sticky="ew", padx=20, pady=(0, 6))
@@ -183,16 +199,17 @@ class ProgramPanel(Frame):
         )
 
         self.add_button = Button(btn_frame, text="Add Program",
-                                 command=self.open_add_dialog, **btn_cfg)
+                                command=self.open_add_dialog, **btn_cfg)
         self.add_button.pack(side="left", padx=(0, 8))
 
         self.edit_button = Button(btn_frame, text="Edit Program",
-                                  command=self.open_edit_dialog, **btn_cfg)
+                                command=self.open_edit_dialog, **btn_cfg)
         self.edit_button.pack(side="left", padx=(0, 8))
 
         self.delete_button = Button(btn_frame, text="Delete Program",
                                     command=self.delete_selected_program, **btn_cfg)
         self.delete_button.pack(side="left")
+
 
     def _build_table(self):
         table_frame = Frame(self.content, bg="#F8ECD1")
@@ -263,7 +280,7 @@ class ProgramPanel(Frame):
             self._update_pagination_controls()
 
         except FileNotFoundError:
-            print("programs.csv not found.")
+            print("programs not found.")
 
 
     def open_add_dialog(self):
@@ -307,6 +324,12 @@ class ProgramPanel(Frame):
         else:
             for btn in (self.delete_button, self.edit_button):
                 btn.config(state="normal")
+
+    def on_refresh(self):
+        self.search_entry.delete(0, "end")
+        self._full_data = []
+        self.current_page = 1
+        self.populate_programs()
 
     def on_search(self):
         query = self.search_entry.get().strip()
