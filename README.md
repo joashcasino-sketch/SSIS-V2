@@ -67,6 +67,14 @@ cd app
 python main.py
 ```
 
+To Access the app: 
+
+| username | password |
+|---|---|
+| admin | admin |
+
+> or try to register for view-only access
+
 > Make sure your MySQL server is running and your connection credentials in the app config match your local setup.
 
 ---
@@ -90,7 +98,7 @@ Pull requests are welcome. For major changes, please open an issue first to disc
 
 ## License
 
-This project is open source. See [LICENSE](LICENSE) for details.
+This project is for educational purposes only.
 
 ---
 
