@@ -72,3 +72,5 @@ LINES TERMINATED BY '\r\n'
 ALTER TABLE programs MODIFY program_name VARCHAR(100) NOT NULL;
 
 ALTER TABLE students MODIFY program_code VARCHAR(20) NOT NULL;
+
+DELETE FROM students;
