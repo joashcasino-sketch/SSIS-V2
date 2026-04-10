@@ -122,10 +122,8 @@ def create_login_window():
         outline=""
     )
 
-    # Bind Enter key to login
     window.bind('<Return>', lambda e: handle_sign_in(username_entry, password_entry, window))
     
-    # Keep image references to prevent garbage collection
     window.image_refs = [image_image_1, entry_image_1, entry_image_2, button_image_1, button_image_2, icon]
     
     window.resizable(False, False)

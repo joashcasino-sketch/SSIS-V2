@@ -25,7 +25,7 @@ class Login_Logic:
         connect.close()
 
         if user and bcrypt.checkpw(password.encode('utf-8'), user['password'].encode('utf-8')):
-            return user.get('role', user)
+            return user.get('role', 'user')
         return None    
     
     def register_user(self, username, password, role='user'):

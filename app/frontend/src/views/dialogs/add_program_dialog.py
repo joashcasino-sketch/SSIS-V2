@@ -1,18 +1,25 @@
-import csv
 import tkinter as tk
+import sys
 from tkinter import messagebox
 from pathlib import Path
 
-DATA_PATH = Path(__file__).resolve().parent.parent.parent.parent.parent / "backend" / "data"
+DB_PATH = Path(__file__).resolve().parent.parent.parent.parent / 'backend' / 'src' / 'db'
+sys.path.insert(0, str(DB_PATH))
+from db_connection import get_connection
 
 def load_colleges():
     colleges = {}
     try:
-        with open(DATA_PATH / "colleges.csv", newline="", encoding="utf-8-sig") as f:
-            for row in csv.DictReader(f):
-                colleges[row["College Code"]] = row["College Name"]
-    except FileNotFoundError:
-        pass
+        conn = get_connection()
+        cursor = conn.cursor(dictionary=True)
+        cursor.execute("SELECT college_code, college_name FROM colleges")
+        for row in cursor.fetchall():
+            colleges[row["college_code"]] = row["college_name"]
+    except Exception as e:
+        print(f"Error loading colleges: {e}")
+    finally:
+        if cursor: cursor.close()
+        if conn: conn.close()
     return colleges
 
 def dropdown_style():
@@ -101,6 +108,11 @@ class AddProgramDialog:
 
     def on_save(self):
         college_raw = self.college_var.get()
+
+        if not college_raw or college_raw == "No colleges":
+            messagebox.showerror("Error", "Please add a college first before adding a program.")
+            return
+
         college_code = college_raw.split(" - ")[0]
         college_name = college_raw.split(" - ")[1] if " - " in college_raw else ""
 

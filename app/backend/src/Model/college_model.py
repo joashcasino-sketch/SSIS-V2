@@ -1,5 +1,4 @@
 from pathlib import Path
-from sqlite3 import Cursor
 import sys
 
 DB_PATH = Path(__file__).resolve().parent.parent / "db" 

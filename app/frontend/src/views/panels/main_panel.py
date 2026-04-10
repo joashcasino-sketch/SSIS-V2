@@ -49,7 +49,6 @@ class MainPanel:
 
 
     def show_panel(self, name):
-        print(f"panels type: {type(self.panels)}, value: {self.panels}")
         if name not in self.panels:
             print(f"Panel '{name}' not found. Available: {list(self.panels.keys())}")
             return

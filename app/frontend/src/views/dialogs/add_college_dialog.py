@@ -45,6 +45,9 @@ class AddCollegeDialog:
         # College Code
         tk.Label(form_frame, background="#F8ECD1",  text="College Code:", font=("Lato", 10)).grid(row=4, column=0, sticky="w", pady=10)
         self.college_code_entry = tk.Entry(form_frame, bg="#DEB6AB", font=("Lato", 10), width=30)
+        self.college_code_entry.configure(validate="key", validatecommand=(
+            self.dialog.register(lambda P: len(P) <= 8), "%P"   # ← blocks input beyond 8 chars
+        ))
         self.college_code_entry.grid(row=4, column=1, pady=10)
         
         # College
@@ -85,13 +88,17 @@ class AddCollegeDialog:
     def on_save(self):
         # Collect form data
         college_data = {
-            'College Code': self.college_code_entry.get().strip(),
+            'College Code': self.college_code_entry.get().strip().upper(),
             'College Name': self.college_name_entry.get().strip()
         }
         
         # Validate
         if not college_data['College Code'] or not college_data['College Name']:
             messagebox.showerror("Error", "ID College Code and  College Name are required!")
+            return
+        
+        if len(college_data['College Code']) > 8:                        
+            messagebox.showerror("Error", "College Code must be 8 characters or less!")
             return
         
         # Call controller

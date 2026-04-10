@@ -1,29 +1,46 @@
-import csv
 import tkinter as tk
 from tkinter import messagebox
 from pathlib import Path
+import sys
 
-DATA_PATH = Path(__file__).resolve().parent.parent.parent.parent.parent / "backend" / "data"
+DB_PATH = Path(__file__).resolve().parent.parent.parent.parent / 'backend' / 'src' / 'db'
+sys.path.insert(0, str(DB_PATH))
+from db_connection import get_connection
 
 def load_colleges():
     colleges = {}
+    conn = None
+    cursor = None
     try:
-        with open(DATA_PATH / "colleges.csv", newline="", encoding="utf-8-sig") as f:
-            for row in csv.DictReader(f):
-                colleges[row["College Code"]] = row["College Name"]
-    except FileNotFoundError:
-        pass
+        conn = get_connection()
+        cursor = conn.cursor(dictionary=True)
+        cursor.execute("SELECT college_code, college_name FROM colleges")
+        for row in cursor.fetchall():
+            colleges[row["college_code"]] = row["college_name"]
+    except Exception as e:
+        print(f"Error loading colleges: {e}")
+    finally:
+        if cursor: cursor.close()
+        if conn: conn.close()
     return colleges
 
 def load_programs_by_college(college_code):
     programs = []
+    conn = None
+    cursor = None
     try:
-        with open(DATA_PATH / "programs.csv", newline="", encoding="utf-8-sig") as f:
-            for row in csv.DictReader(f):
-                if row["College Code"] == college_code:
-                    programs.append(row["Program Code"])
-    except FileNotFoundError:
-        pass
+        conn = get_connection()
+        cursor = conn.cursor(dictionary=True)
+        cursor.execute(
+            "SELECT program_code FROM programs WHERE college_code = %s",
+            (college_code,)
+        )
+        programs = [row["program_code"] for row in cursor.fetchall()]
+    except Exception as e:
+        print(f"Error loading programs: {e}")
+    finally:
+        if cursor: cursor.close()
+        if conn: conn.close()
     return programs
 
 def dropdown_style():
