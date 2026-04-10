@@ -24,6 +24,11 @@ class CollegePanel(Frame):
         self.user_role = user_role
         self.college_controller = CollegeController(self, user_role)
 
+        #Pagination Setup
+        self.current_page = 1
+        self.page_size = 20
+        self._full_data = []
+
         self.rowconfigure(0, weight=0)    
         self.rowconfigure(1, weight=1)     
         self.columnconfigure(0, weight=0) 
@@ -111,11 +116,13 @@ class CollegePanel(Frame):
         self.content.rowconfigure(0, weight=0)   # toolbar
         self.content.rowconfigure(1, weight=0)   # action bar
         self.content.rowconfigure(2, weight=1)   # table ← expands
+        self.content.rowconfigure(3, weight=0)
         self.content.columnconfigure(0, weight=1)
 
         self._build_toolbar()
         self._build_action_bar()
         self._build_table()
+        self._build_pagination()
 
     def _build_toolbar(self):
         toolbar = Frame(self.content, bg="#F8ECD1", height=55)
@@ -235,9 +242,18 @@ class CollegePanel(Frame):
         self.tree.tag_configure("even", background="#AC7D88", foreground="#FFFFFF")
 
         try:
-            if data is None:
-               data = self.college_controller.get_all_colleges()
-            for i, row in enumerate(data):
+            if data is not None:
+                self._full_data = data
+                self.current_page = 1
+
+            elif not self._full_data:
+                self._full_data = self.college_controller.get_all_colleges()
+
+            start = (self.current_page - 1) * self.page_size
+            end = start + self.page_size
+            page_data = self._full_data[start:end]
+
+            for i, row in enumerate(page_data):
                 tag = "odd" if i % 2 == 0 else "even"
                 self.tree.insert("", "end", text=str(i + 1), values=(
                     row["College Code"],
@@ -308,6 +324,54 @@ class CollegePanel(Frame):
     def on_drag_release(self, event):
         pass
 
+    #Pagination Helpers
+    def _build_pagination(self):
+        self.pagination_frame = Frame(self.content, bg="#F8ECD1")
+        self.pagination_frame.grid(row=3, column=0, sticky="ew", padx=20, pady=(0, 10))
+
+        btn_cfg = dict(
+            font=("Lato", 10, "bold"),
+            borderwidth=0, highlightthickness=0,
+            background="#85586F", foreground="white",
+            relief="flat", activebackground="#6e3d54",
+            cursor="hand2", padx=10, pady=4,
+        )
+
+        self.prev_btn = Button(self.pagination_frame, text="← Prev",
+                            command=self._prev_page, **btn_cfg)
+        self.prev_btn.pack(side="left", padx=(0, 8))
+
+        self.page_label = Label(self.pagination_frame, text="Page 1 of 1",
+                                font=("Lato", 10), bg="#F8ECD1", fg="#642D48")
+        self.page_label.pack(side="left", padx=8)
+
+        self.next_btn = Button(self.pagination_frame, text="Next →",
+                            command=self._next_page, **btn_cfg)
+        self.next_btn.pack(side="left", padx=(0, 8))
+
+        self.page_info_label = Label(self.pagination_frame, text="",
+                                    font=("Lato", 9), bg="#F8ECD1", fg="#888")
+        self.page_info_label.pack(side="left", padx=8)
+
+    def _update_pagination_controls(self):
+        total = len(self._full_data)
+        total_pages = max(1, -(-total // self.page_size))
+
+        self.page_label.config(text=f"Page {self.current_page} of {total_pages}")
+        self.page_info_label.config(text=f"({total} total records)")
+        self.prev_btn.config(state="normal" if self.current_page > 1 else "disabled")
+        self.next_btn.config(state="normal" if self.current_page < total_pages else "disabled")
+
+    def _prev_page(self):
+        if self.current_page > 1:
+            self.current_page -= 1
+            self.populate_colleges()
+
+    def _next_page(self):
+        total_pages = max(1, -(-len(self._full_data) // self.page_size))
+        if self.current_page < total_pages:
+            self.current_page += 1
+            self.populate_colleges()
 
 if __name__ == "__main__":
     from main_panel import MainPanel

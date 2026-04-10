@@ -53,3 +53,16 @@ INSERT INTO users (username, password, role) VALUES
     ('admin', 'admin', 'admin');
 
 UPDATE users SET role = 'admin' WHERE username = 'admin';
+
+SHOW VARIABLES LIKE 'secure_file_priv';
+
+LOAD DATA INFILE 'C:/ProgramData/MySQL/MySQL Server 9.6/Uploads/programs.csv'
+INTO TABLE programs
+FIELDS TERMINATED BY ','
+LINES TERMINATED BY '\r\n'
+(program_code, program_name, college_code);
+
+ALTER TABLE programs MODIFY program_name VARCHAR(100) NOT NULL;
+
+ALTER TABLE programs MODIFY program_code VARCHAR(20) NOT NULL;
+ALTER TABLE programs MODIFY program_name VARCHAR(100) NOT NULL;
